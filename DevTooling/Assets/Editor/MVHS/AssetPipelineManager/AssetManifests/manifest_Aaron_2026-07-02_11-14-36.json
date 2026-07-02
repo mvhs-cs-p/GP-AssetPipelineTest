@@ -1,0 +1,20 @@
+{
+    "exportedBy": "Aaron",
+    "exportDate": "2026-07-02T11:14:36",
+    "description": "",
+    "folders": [
+        {
+            "folderPath": "Assets/Project/Art/Sprites/",
+            "files": [
+                "Assets/Project/Art/Sprites/car_black_1.png",
+                "Assets/Project/Art/Sprites/character_brown_red.png"
+            ]
+        },
+        {
+            "folderPath": "Assets/Project/Scenes/",
+            "files": [
+                "Assets/Project/Scenes/SampleScene.unity"
+            ]
+        }
+    ]
+}
