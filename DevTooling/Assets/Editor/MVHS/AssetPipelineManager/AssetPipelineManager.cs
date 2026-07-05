@@ -1,6 +1,7 @@
 using MVHS;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -74,7 +75,6 @@ namespace MVHS
 
         private void Refresh()
         {
-            //if (m_Config == null) return;
             LoadCombinedManifest();
             RefreshFolderStatuses();
         }
@@ -87,11 +87,12 @@ namespace MVHS
         {
             m_ExpectedFiles.Clear();
 
-            string manifestPath = SAssetPipelineConfig.ManifestFolderPath;
-            //string diskManifestPath = Path.Combine(Application.dataPath, manifestPath.TrimStart('/'));
-            string projectRoot = Path.GetDirectoryName(Application.dataPath);
-            string diskManifestPath = Path.Combine(projectRoot, manifestPath);
-            diskManifestPath = diskManifestPath.Replace("\\", "/");
+            //string manifestPath = AssetPipelineConfig.ManifestFolderPath;
+            //string projectRoot = Path.GetDirectoryName(Application.dataPath);
+            //string diskManifestPath = Path.Combine(projectRoot, manifestPath);
+            //diskManifestPath = diskManifestPath.Replace("\\", "/");
+            string diskManifestPath = AssetPipelineConfig.GetDiskPath(AssetPipelineConfig.GetManifestFolderAssetPath());
+
 
             if (!Directory.Exists(diskManifestPath))
             {
@@ -144,7 +145,7 @@ namespace MVHS
         {
             m_FolderStatuses.Clear();
 
-            foreach (string folder in SAssetPipelineConfig.projectFolders)
+            foreach (string folder in AssetPipelineConfig.projectFolders)
             {
                 //string diskPath = Path.Combine(Application.dataPath, folder.TrimStart('/'));
                 //diskPath = diskPath.Replace("\\", "/");
@@ -238,8 +239,7 @@ namespace MVHS
             EditorGUILayout.LabelField("Asset Package Manager", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
                 "Export asset folders into a .unitypackage for distribution, " +
-                "or import a package received from a teammate.\n\n" +
-                "Each export generates a manifest file that should be committed to git.",
+                "or import a package received from a teammate.",
                 MessageType.Info);
             EditorGUILayout.Space(5);
         }
@@ -332,8 +332,9 @@ namespace MVHS
 
             bool hasAssets = m_FolderStatuses.Any(s => s.state == FolderState.Ready);
             bool hasName = !string.IsNullOrWhiteSpace(m_ExporterName);
+            bool hasDescription = !string.IsNullOrWhiteSpace(m_ExportDescription);
 
-            EditorGUI.BeginDisabledGroup(!hasAssets || !hasName);
+            EditorGUI.BeginDisabledGroup(!hasAssets || !hasName || !hasDescription);
             if (GUILayout.Button("Export Asset Package", GUILayout.Height(30)))
             {
                 SaveExporterName();
@@ -348,6 +349,10 @@ namespace MVHS
             else if (!hasAssets)
             {
                 EditorGUILayout.HelpBox("No folders contain assets to export.", MessageType.Info);
+            }
+            else if (!hasDescription)
+            {
+                EditorGUILayout.HelpBox("Enter a description before exporting.", MessageType.Info);
             }
         }
 
@@ -371,7 +376,7 @@ namespace MVHS
             var manifestFolders = new List<ManifestFolder>();
 
             //foreach (string folder in m_Config.assetFolders)
-            foreach (string folder in SAssetPipelineConfig.projectFolders)
+            foreach (string folder in AssetPipelineConfig.projectFolders)
             {
                 //string fullPath = m_Config.GetFullPath(folder);
                 string fullPath = folder;
@@ -440,12 +445,14 @@ namespace MVHS
             //assetPaths = assetPaths.Distinct().ToList();
 
             // Ask where to save the .unitypackage.
+            string defaultSaveName = $"{m_ExporterName.Trim()}_{DateTime.Now.ToString("yyyy_MM_ddTHH_mm_ss")}";
+         
             string defaultDir = Path.GetDirectoryName(Application.dataPath);
             string savePath = EditorUtility.SaveFilePanel(
                 "Save Asset Package",
                 defaultDir,
                 //m_Config.GetPackageFileName(),
-                "Temp Save",
+                defaultSaveName,
                 "unitypackage");
 
             if (string.IsNullOrEmpty(savePath)) return;
@@ -484,8 +491,8 @@ namespace MVHS
         private void GenerateManifest(List<ManifestFolder> folders)
         {
             // Ensure the manifest folder exists.
-            string manifestFolderPath = SAssetPipelineConfig.ManifestFolderPath; //m_Config.GetManifestFolderPath();
-            EnsureFolderExists(manifestFolderPath);
+            string manifestFolderAssetPath = AssetPipelineConfig.GetManifestFolderAssetPath(); //AssetPipelineConfig.ManifestFolderPath; //m_Config.GetManifestFolderPath();
+            EnsureFolderExists(manifestFolderAssetPath);
 
             // Build the manifest.
             var manifest = new AssetPipelineManifest
@@ -505,8 +512,10 @@ namespace MVHS
 
             string fullFilePath = Path.Combine(
                 projectRoot,
-                SAssetPipelineConfig.ManifestFolderPath,
-                fileName);
+                //AssetPipelineConfig.ManifestFolderPath,
+                manifestFolderAssetPath,
+                fileName
+                );
 
             fullFilePath = fullFilePath.Replace("\\", "/");
 

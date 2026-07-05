@@ -35,18 +35,18 @@ namespace MVHS
         };
         private Tabs m_SelectedTab = Tabs.SceneDependencyViewer;
         private Tabs m_LastSelectedTab = Tabs.SceneDependencyViewer;
-        private readonly string[] _tabLabels = { "Scene Dependency Viewer", "GameObject Dependency Viewer", "Rules" };
+        private readonly string[] m_TabLabels = { "Scene Dependency Viewer", "GameObject Dependency Viewer", "Rules" };
 
 
         // ─── Shared scroll positions (one per tab) ────────────────────────────────
-        private Vector2 _dependencyScrollPos;
-        private Vector2 _rulesScrollPos;
+        private Vector2 m_DependencyScrollPos;
+        private Vector2 m_RulesScrollPos;
 
         // ─── Styles (initialised lazily so GUISkin is ready) ─────────────────────
-        private GUIStyle _headerStyle;
-        private GUIStyle _subHeaderStyle;
-        private GUIStyle _hintStyle;
-        private bool _stylesInitialised;
+        private GUIStyle m_HeaderStyle;
+        private GUIStyle m_SubHeaderStyle;
+        private GUIStyle m_HintStyle;
+        private bool m_StylesInitialised;
 
         // ─── Colours ──────────────────────────────────────────────────────────────
         // A palette that reads clearly in both Unity's dark and light themes.
@@ -59,43 +59,17 @@ namespace MVHS
         // ─── Rules data model ─────────────────────────────────────────────────────
         ValidatorRules m_ValidatorRules = new ValidatorRules();
 
-        // ─── Scan results data model ──────────────────────────────────────────────
-
-        ///// <summary>Validation status of a single scanned asset.</summary>
-        //public enum AssetStatus
-        //{
-        //    Pass,       // path satisfies its rule
-        //    Fail,       // path violates its rule
-        //    NoRule,     // no rule covers this extension — neutral
-        //}
-
-        ///// <summary>One row in the dependency results list.</summary>
-        //public class DependencyResult
-        //{
-        //    public string assetPath;      // e.g. "Assets/_ImportedAssets/Pack/sound.wav"
-        //    public string extension;      // e.g. ".wav"
-        //    public AssetStatus status;
-        //    public string requiredFolder; // populated when status == Fail, for the hint
-        //    public bool moved;          // true after a successful migration this session
-        //}
 
         private GameObject m_LastSelectedObject;
 
         // ─── Scan state ───────────────────────────────────────────────────────────
         private GameObject m_LastScannedObject;
         private ScanResults m_LastScanResults = new ScanResults();
-        //private List<DependencyResult> _scanResults = new List<DependencyResult>();
-        //private bool _hasScanned = false;
-
-        //// Summary counts — recalculated after each scan
-        //private int _countPass;
-        //private int _countFail;
-        //private int _countNoRule;
 
         // Filter toggles shown above the results list
-        private bool _showPass = true;
-        private bool _showFail = true;
-        private bool _showNoRule = false;  // off by default — keeps the list focused
+        private bool m_ShowPass = true;
+        private bool m_ShowFail = true;
+        private bool m_ShowNoRule = false;  // off by default — keeps the list focused
 
         // ─────────────────────────────────────────────────────────────────────────
         //  Open the window
@@ -116,7 +90,7 @@ namespace MVHS
         {
             // Styles can't be created here (GUISkin not ready), so we flag for
             // lazy init on the first OnGUI call instead.
-            _stylesInitialised = false;
+            m_StylesInitialised = false;
             m_ValidatorRules.LoadRules();
         }
 
@@ -164,8 +138,8 @@ namespace MVHS
         private void DrawHeader()
         {
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Asset Structure Validator", _headerStyle);
-            EditorGUILayout.LabelField("Audit dependencies · validate rules · migrate assets", _hintStyle);
+            EditorGUILayout.LabelField("Asset Structure Validator", m_HeaderStyle);
+            EditorGUILayout.LabelField("Audit dependencies · validate rules · migrate assets", m_HintStyle);
             EditorGUILayout.Space(6);
         }
 
@@ -176,11 +150,10 @@ namespace MVHS
         {
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(8);
-            m_SelectedTab = (Tabs)GUILayout.Toolbar((int)m_SelectedTab, _tabLabels, GUILayout.Height(28));
+            m_SelectedTab = (Tabs)GUILayout.Toolbar((int)m_SelectedTab, m_TabLabels, GUILayout.Height(28));
             GUILayout.Space(8);
             EditorGUILayout.EndHorizontal();
         }
-
 
         private void DrawSceneDependencyViewerTab()
         {
@@ -294,7 +267,7 @@ namespace MVHS
 
             // Object name — guard against the object being destroyed between scan and repaint
             string objLabel = (m_LastScannedObject != null) ? $"\"{m_LastScannedObject.name}\"" : "previous scan";
-            EditorGUILayout.LabelField($"Results for {objLabel}", _subHeaderStyle);
+            EditorGUILayout.LabelField($"Results for {objLabel}", m_SubHeaderStyle);
 
             GUILayout.FlexibleSpace();
 
@@ -312,17 +285,17 @@ namespace MVHS
             GUILayout.Space(8);
             EditorGUILayout.LabelField("Show:", GUILayout.Width(36));
 
-            GUI.backgroundColor = _showPass ? PassGreen : Color.white;
+            GUI.backgroundColor = m_ShowPass ? PassGreen : Color.white;
             if (GUILayout.Button("Pass", EditorStyles.miniButton, GUILayout.Width(48)))
-                _showPass = !_showPass;
+                m_ShowPass = !m_ShowPass;
 
-            GUI.backgroundColor = _showFail ? FailRed : Color.white;
+            GUI.backgroundColor = m_ShowFail ? FailRed : Color.white;
             if (GUILayout.Button("Fail", EditorStyles.miniButton, GUILayout.Width(48)))
-                _showFail = !_showFail;
+                m_ShowFail = !m_ShowFail;
 
-            GUI.backgroundColor = _showNoRule ? WarnYellow : Color.white;
+            GUI.backgroundColor = m_ShowNoRule ? WarnYellow : Color.white;
             if (GUILayout.Button("No Rule", EditorStyles.miniButton, GUILayout.Width(58)))
-                _showNoRule = !_showNoRule;
+                m_ShowNoRule = !m_ShowNoRule;
 
             GUI.backgroundColor = Color.white;
             GUILayout.Space(8);
@@ -343,7 +316,7 @@ namespace MVHS
             DrawDivider();
 
             // ── Results list ───────────────────────────────────────────────────
-            _dependencyScrollPos = EditorGUILayout.BeginScrollView(_dependencyScrollPos);
+            m_DependencyScrollPos = EditorGUILayout.BeginScrollView(m_DependencyScrollPos);
 
             int rowIndex = 0;
             bool anyVisible = false;
@@ -352,9 +325,9 @@ namespace MVHS
             foreach (DependencyResult result in m_LastScanResults.dependencyResults)
             {
                 // Apply filter
-                if (result.status == AssetStatus.Pass && !_showPass) continue;
-                if (result.status == AssetStatus.Fail && !_showFail) continue;
-                if (result.status == AssetStatus.NoRule && !_showNoRule) continue;
+                if (result.status == AssetStatus.Pass && !m_ShowPass) continue;
+                if (result.status == AssetStatus.Fail && !m_ShowFail) continue;
+                if (result.status == AssetStatus.NoRule && !m_ShowNoRule) continue;
 
                 anyVisible = true;
 
@@ -420,7 +393,7 @@ namespace MVHS
                     GUI.color = FailRed;
                     EditorGUILayout.LabelField(
                         $"→ should be somewhere under  …/{result.requiredFolder}/",
-                        _hintStyle);
+                        m_HintStyle);
                     GUI.color = Color.white;
                     EditorGUILayout.EndHorizontal();
                 }
@@ -441,19 +414,19 @@ namespace MVHS
         private void DrawRulesTab()
         {
             EditorGUILayout.Space(8);
-            EditorGUILayout.LabelField("Folder Rules", _subHeaderStyle);
+            EditorGUILayout.LabelField("Folder Rules", m_SubHeaderStyle);
             EditorGUILayout.Space(2);
             EditorGUILayout.LabelField(
                 "These rules define where each file type must live in your project. " +
                 "An asset passes if its path contains the required folder name.",
-                _hintStyle, GUILayout.Height(36));
+                m_HintStyle, GUILayout.Height(36));
 
             EditorGUILayout.Space(4);
 
             // ── JSON file path + reload button ─────────────────────────────────
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(8);
-            EditorGUILayout.LabelField($"Source:  {ValidatorRules.RulesPath}", _hintStyle);
+            EditorGUILayout.LabelField($"Source:  {ValidatorRules.RulesPath}", m_HintStyle);
             if (GUILayout.Button("↺ Reload", EditorStyles.miniButton, GUILayout.Width(64), GUILayout.Height(18)))
                 m_ValidatorRules.LoadRules();
             GUILayout.Space(8);
@@ -471,7 +444,7 @@ namespace MVHS
                 GUI.color = WarnYellow;
                 EditorGUILayout.LabelField(
                     $"⚠  No rules loaded. Make sure  {ValidatorRules.RulesPath}  exists.",
-                    _hintStyle);
+                    m_HintStyle);
                 GUI.color = Color.white;
                 GUILayout.Space(8);
                 EditorGUILayout.EndHorizontal();
@@ -491,7 +464,7 @@ namespace MVHS
             EditorGUILayout.Space(2);
 
             // ── Rule rows ──────────────────────────────────────────────────────
-            _rulesScrollPos = EditorGUILayout.BeginScrollView(_rulesScrollPos);
+            m_RulesScrollPos = EditorGUILayout.BeginScrollView(m_RulesScrollPos);
 
             IReadOnlyList<FolderRule> rules = m_ValidatorRules.GetActiveRules();
             for (int i = 0; i < m_ValidatorRules.RulesCount; i++)
@@ -517,7 +490,7 @@ namespace MVHS
 
                 // Optional description
                 if (!string.IsNullOrEmpty(rule.description))
-                    EditorGUILayout.LabelField(rule.description, _hintStyle);
+                    EditorGUILayout.LabelField(rule.description, m_HintStyle);
 
                 GUILayout.Space(8);
                 EditorGUILayout.EndHorizontal();
@@ -532,7 +505,7 @@ namespace MVHS
             GUILayout.Space(8);
             EditorGUILayout.LabelField(
                 $"{m_ValidatorRules.RulesCount} rule{(m_ValidatorRules.RulesCount != 1 ? "s" : "")}  ·  edit  {ValidatorRules.RulesPath}  to make changes",
-                _hintStyle);
+                m_HintStyle);
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space(4);
         }
@@ -555,7 +528,7 @@ namespace MVHS
             GUILayout.FlexibleSpace();
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField(message, _hintStyle, GUILayout.MaxWidth(340));
+            EditorGUILayout.LabelField(message, m_HintStyle, GUILayout.MaxWidth(340));
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
@@ -689,23 +662,23 @@ namespace MVHS
         // ─────────────────────────────────────────────────────────────────────────
         private void InitStylesIfNeeded()
         {
-            if (_stylesInitialised) return;
+            if (m_StylesInitialised) return;
 
-            _headerStyle = new GUIStyle(EditorStyles.boldLabel)
+            m_HeaderStyle = new GUIStyle(EditorStyles.boldLabel)
             {
                 fontSize = 16,
                 alignment = TextAnchor.MiddleLeft,
                 padding = new RectOffset(8, 0, 0, 0)
             };
 
-            _subHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
+            m_SubHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
             {
                 fontSize = 12,
                 alignment = TextAnchor.MiddleLeft,
                 padding = new RectOffset(8, 0, 0, 0)
             };
 
-            _hintStyle = new GUIStyle(EditorStyles.wordWrappedLabel)
+            m_HintStyle = new GUIStyle(EditorStyles.wordWrappedLabel)
             {
                 fontSize = 11,
                 alignment = TextAnchor.MiddleLeft,
@@ -713,7 +686,7 @@ namespace MVHS
                 normal = { textColor = new Color(0.6f, 0.6f, 0.6f) }
             };
 
-            _stylesInitialised = true;
+            m_StylesInitialised = true;
         }
     }
 }

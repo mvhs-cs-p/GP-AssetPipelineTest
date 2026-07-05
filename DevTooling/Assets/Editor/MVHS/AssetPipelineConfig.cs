@@ -1,8 +1,11 @@
 
+using System.IO;
+using UnityEngine;
+
 namespace MVHS
 {
 
-    public static class SAssetPipelineConfig
+    public static class AssetPipelineConfig
     {
         public static string[] projectFolders =
         {
@@ -30,12 +33,25 @@ namespace MVHS
             "Assets/Project/UI/"
         };
 
-        public static string ManifestFolderPath 
-        { 
-            get
-            {
-                return "Assets/Editor/MVHS/AssetPipelineManager/AssetManifests";
-            }
+        //public static string ManifestFolderPath
+        //{
+        //    get
+        //    {
+        //        return "Assets/Editor/MVHS/AssetPipelineManager/AssetManifests";
+        //    }
+        //}
+        
+        public static string GetManifestFolderAssetPath()
+        {
+            return "Assets/Editor/MVHS/AssetPipelineManager/AssetManifests";
+        }
+
+        public static string GetDiskPath(string folder)
+        {
+            string projectRoot = Path.GetDirectoryName(Application.dataPath);
+            string diskPath = Path.Combine(projectRoot, folder);
+            diskPath = diskPath.Replace("\\", "/");
+            return diskPath;
         }
     }
 }

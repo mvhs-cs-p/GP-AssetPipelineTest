@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+
 namespace MVHS
 {
     /// <summary>
@@ -24,25 +25,16 @@ namespace MVHS
         [MenuItem("Tools/MVHS/Asset Pipeline Startup Check")]
         public static void CreateProjectDirectory()
         {
-            RunStartupCheck();
+            RunStartupCheck(true);
         }
 
         static AssetPipelineStartupCheck()
         {
-            EditorApplication.delayCall += RunStartupCheck;
+            EditorApplication.delayCall += () => RunStartupCheck(false);
         }
 
-        private static void RunStartupCheck()
+        private static void RunStartupCheck(bool showNoMissingDialog)
         {
-            //// Find the config.
-            //string[] guids = AssetDatabase.FindAssets("t:AssetPackageConfig");
-            //if (guids.Length == 0) return;
-
-            //string configPath = AssetDatabase.GUIDToAssetPath(guids[0]);
-            //var config = AssetDatabase.LoadAssetAtPath<AssetPackageConfig>(configPath);
-
-            //if (config == null || config.assetFolders.Count == 0) return;
-
             // Load and combine all manifests.
             var expectedFiles = LoadCombinedManifest();
 
@@ -50,11 +42,12 @@ namespace MVHS
             var foldersNeedingImport = new List<string>();
             int totalExpectedFiles = 0;
 
-            foreach (string folder in SAssetPipelineConfig.projectFolders)
+            foreach (string folder in AssetPipelineConfig.projectFolders)
             {
-                string projectRoot = Path.GetDirectoryName(Application.dataPath);
-                string diskPath = Path.Combine(projectRoot, folder);
-                diskPath = diskPath.Replace("\\", "/");
+                //string projectRoot = Path.GetDirectoryName(Application.dataPath);
+                //string diskPath = Path.Combine(projectRoot, folder);
+                //diskPath = diskPath.Replace("\\", "/");
+                string diskPath = AssetPipelineConfig.GetDiskPath(folder);
 
                 bool existsOnDisk = Directory.Exists(diskPath);
 
@@ -92,7 +85,18 @@ namespace MVHS
             }
 
             // Nothing missing — all clear.
-            if (foldersNeedingImport.Count == 0) return;
+            if (foldersNeedingImport.Count == 0)
+            {
+                if (showNoMissingDialog)
+                {
+                    EditorUtility.DisplayDialog(
+                        title: "Asset Pipeline Startup Check",
+                        message: "All assets in pipeline manifest accounted for.",
+                        ok: "OK"
+                        );
+                }
+                return;
+            }
 
             // Build warning message.
             string folderList = string.Join("\n", foldersNeedingImport);
@@ -131,11 +135,15 @@ namespace MVHS
         {
             var combined = new Dictionary<string, List<string>>();
 
-            string projectRoot = Path.GetDirectoryName(Application.dataPath);
-            string diskManifestPath = Path.Combine(projectRoot, SAssetPipelineConfig.ManifestFolderPath);
-            diskManifestPath = diskManifestPath.Replace("\\", "/");
+            //string projectRoot = Path.GetDirectoryName(Application.dataPath);
+            //string diskManifestPath = Path.Combine(projectRoot, AssetPipelineConfig.ManifestFolderPath);
+            //diskManifestPath = diskManifestPath.Replace("\\", "/");
+            string diskManifestPath = AssetPipelineConfig.GetDiskPath(AssetPipelineConfig.GetManifestFolderAssetPath());
 
-            if (!Directory.Exists(diskManifestPath)) return combined;
+            if (!Directory.Exists(diskManifestPath))
+            {
+                return combined;
+            }
 
             string[] manifestFiles = Directory.GetFiles(diskManifestPath, "*.json");
 

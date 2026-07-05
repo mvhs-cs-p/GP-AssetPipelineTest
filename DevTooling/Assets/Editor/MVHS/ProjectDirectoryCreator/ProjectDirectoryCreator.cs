@@ -1,73 +1,88 @@
-using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
-using UnityEngine;
+
 
 namespace MVHS
 {
     public static class ProjectDirectoryCreator
     {
+        /// <summary>
+        /// Create the default MVHS project directory. Only missing files will be created.
+        /// </summary>
         [MenuItem("Tools/MVHS/Project Directory Creator")]
         public static void CreateProjectDirectory()
         {
-            const string projectDirectoryRoot = "Assets/Project";
-            if (AssetDatabase.IsValidFolder(projectDirectoryRoot))
-            {
-                Debug.LogWarning("[ProjectDirectoryCreator] Unable to create project directory. Project directory already exists.");
-                EditorUtility.DisplayDialog(
-                    title: "Project Directory Creator",
-                    message: "Unable to create project directory. Project directory already exists.",
-                    ok: "OK"
-                    );
-                return;
-            }
 
-            string[] projectFolders =
-            {
-                "Assets/Project",
-
-                "Assets/Project/Art",
-                "Assets/Project/Art/Animations",
-                "Assets/Project/Art/Animators",
-                "Assets/Project/Art/Materials",
-                "Assets/Project/Art/Models",
-                "Assets/Project/Art/Shaders",
-                "Assets/Project/Art/Sprites",
-                "Assets/Project/Art/Textures",
-                "Assets/Project/Art/VFX",
-
-                "Assets/Project/Audio",
-                "Assets/Project/Audio/Music",
-                "Assets/Project/Audio/SFX",
-
-                "Assets/Project/PhysicsMaterials",
-                "Assets/Project/Prefabs",
-                "Assets/Project/Scenes",
-                "Assets/Project/ScriptableObjects",
-                "Assets/Project/Scripts",
-                "Assets/Project/UI",
-            };
+            List<string> createdFolders = new List<string>();
+            List<string> projectFolders = AssetPipelineConfig.projectFolders.ToList();
+            projectFolders.Add("Assets/Project/Dev");
 
             foreach (string folder in projectFolders)
             {
-                CreateFolderPath(folder);
+                if (AssetDatabase.IsValidFolder(folder))
+                {
+                    continue;
+                }
+
+                EnsureFolderExists(folder);
+                createdFolders.Add(folder);
+            }
+            AssetDatabase.Refresh();
+
+            // Display number of folders, and folder names that were created
+            if (createdFolders.Count > 0)
+            {
+                string newFolderCreateList = "";
+                foreach (string folder in createdFolders)
+                {
+                    newFolderCreateList += $"{folder}\n";
+                }
+
+                EditorUtility.DisplayDialog(
+                    title: "Created Project Directories",
+                    message: $"Created {createdFolders.Count} project directories(s)\n\n" + newFolderCreateList,
+                    ok: "OK"
+                    );
+            }
+            else
+            {
+                EditorUtility.DisplayDialog(
+                    title: "Created Project Directories",
+                    message: $"All required project directories already exist",
+                    ok: "OK"
+                    );
             }
         }
 
-        public static void CreateFolderPath(string path)
+        /// <summary>
+        /// Ensure all folders, and parent folders are created and valid. Folders, and their parents
+        /// will be created if they do not exist.
+        /// </summary>
+        private static void EnsureFolderExists(string folderPath)
         {
-            if (AssetDatabase.IsValidFolder(path))
+            // Unity needs directories to be split by "/"
+            folderPath = folderPath.Replace("\\", "/").TrimEnd('/');
+
+            if (AssetDatabase.IsValidFolder(folderPath))
             {
                 return;
             }
-            string parentFolder = Path.GetDirectoryName(path);
 
-            // Unity needs /, ensure this is inplace
-            parentFolder = parentFolder.Replace('\\', '/');
+            string[] parts = folderPath.Split('/');
+            string current = parts[0]; // "Assets"
 
-            string newFolderName = Path.GetFileName(path);
+            // Create all parent folders as needed
+            for (int i = 1; i < parts.Length; i++)
+            {
+                string next = current + "/" + parts[i];
+                if (!AssetDatabase.IsValidFolder(next))
+                {
+                    AssetDatabase.CreateFolder(current, parts[i]);
+                }
 
-            AssetDatabase.CreateFolder(parentFolder, newFolderName);
-            AssetDatabase.Refresh();
+                current = next;
+            }
         }
     }
 }
