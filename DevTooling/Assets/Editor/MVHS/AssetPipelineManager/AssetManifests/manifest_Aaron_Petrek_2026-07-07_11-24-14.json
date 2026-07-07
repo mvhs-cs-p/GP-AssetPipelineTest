@@ -1,0 +1,54 @@
+{
+    "exportedBy": "Aaron Petrek",
+    "exportDate": "2026-07-07T11:24:14",
+    "description": "Added alt keys for player Input",
+    "folders": [
+        {
+            "folderPath": "Assets/Project/Art/Sprites/",
+            "files": [
+                "Assets/Project/Art/Sprites/barrel_blue.png",
+                "Assets/Project/Art/Sprites/car_black_1.png",
+                "Assets/Project/Art/Sprites/character_black_blue.png",
+                "Assets/Project/Art/Sprites/character_black_green.png",
+                "Assets/Project/Art/Sprites/character_black_white.png",
+                "Assets/Project/Art/Sprites/character_brown_red.png",
+                "Assets/Project/Art/Sprites/grass_dirt_5.png",
+                "Assets/Project/Art/Sprites/road_side_large.png"
+            ]
+        },
+        {
+            "folderPath": "Assets/Project/Dev/Aaron Petrek/",
+            "files": [
+                "Assets/Project/Dev/Aaron Petrek/TestDevScene.unity"
+            ]
+        },
+        {
+            "folderPath": "Assets/Project/Prefabs/",
+            "files": [
+                "Assets/Project/Prefabs/BlackCar.prefab",
+                "Assets/Project/Prefabs/GreenShirtGuy.prefab",
+                "Assets/Project/Prefabs/PlayerCamera_CinemachineCamera.prefab"
+            ]
+        },
+        {
+            "folderPath": "Assets/Project/Prefabs/Player/",
+            "files": [
+                "Assets/Project/Prefabs/Player/Player.prefab",
+                "Assets/Project/Prefabs/Player/PlayerInput.prefab"
+            ]
+        },
+        {
+            "folderPath": "Assets/Project/Scenes/",
+            "files": [
+                "Assets/Project/Scenes/SampleScene.unity"
+            ]
+        },
+        {
+            "folderPath": "Assets/Project/Scripts/",
+            "files": [
+                "Assets/Project/Scripts/PlayerInput.cs",
+                "Assets/Project/Scripts/PlayerMovement.cs"
+            ]
+        }
+    ]
+}

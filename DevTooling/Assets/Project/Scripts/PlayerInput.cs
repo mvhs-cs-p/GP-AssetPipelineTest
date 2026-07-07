@@ -12,19 +12,19 @@ public class PlayerInput : MonoBehaviour
         int xInput = 0;
         int yInput = 0;
 
-        if (Keyboard.current.wKey.isPressed)
+        if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed)
         {
             yInput += 1;
         }
-        if (Keyboard.current.sKey.isPressed)
+        if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed)
         {
             yInput -= 1;
         }
-        if (Keyboard.current.aKey.isPressed)
+        if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
         {
             xInput -= 1;
         }
-        if (Keyboard.current.dKey.isPressed)
+        if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
         {
             xInput += 1;
         }
